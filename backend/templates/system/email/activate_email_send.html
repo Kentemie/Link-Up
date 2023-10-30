@@ -1,0 +1,11 @@
+{% autoescape off %}
+
+Good day, dear {{ user.get_full_name }}!
+
+Please visit the following link to verify your email address on our website:
+
+    {{ activation_url }}
+
+Sincerely, the team of the site created on Django.
+
+{% endautoescape %}

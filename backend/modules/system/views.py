@@ -14,20 +14,16 @@ from django.contrib.auth.views import (
 )
 from django.db import transaction
 from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.sites.models import Site
 from django.http import JsonResponse
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import login
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
-from django.core.mail import send_mail
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse_lazy
-from django.conf import settings
 
 from .models import Profile, Feedback
 from .forms import (
@@ -42,8 +38,8 @@ from .forms import (
 )
 
 from ..services.mixins import UserIsNotAuthenticated
-from ..services.email import send_contact_email_message
 from ..services.utils import get_client_ip
+from ..services.tasks import send_activate_email_message_task, send_contact_email_message_task
 
 
 
@@ -186,18 +182,8 @@ class UserRegisterView(UserIsNotAuthenticated, CreateView):
         user.is_active = False
         user.save()
 
-        # Functionality for sending a letter and generating a token
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        activation_url = reverse_lazy('system:confirm_email', kwargs={'uidb64': uid, 'token': token})
-        current_site = Site.objects.get_current().domain
-        send_mail(
-            'Confirm your email address',
-            f'Please visit the following link to verify your email address: http://{current_site}{activation_url}',
-            settings.EMAIL_HOST_USER,
-            [user.email],
-            fail_silently=False,
-        )
+        # Asynchronously, using celery, an activation letter is sent to the new user's email.
+        send_activate_email_message_task.delay(user.id)
         return redirect('system:email_confirmation_sent')
 
 
@@ -254,6 +240,10 @@ class EmailConfirmationFailedView(TemplateView):
     
 
 
+# <-- Feedback -->
+
+
+
 class FeedbackCreateView(SuccessMessageMixin, CreateView):
 
     model = Feedback
@@ -269,7 +259,7 @@ class FeedbackCreateView(SuccessMessageMixin, CreateView):
             feedback.ip_address = get_client_ip(self.request)
             if self.request.user.is_authenticated:
                 feedback.user = self.request.user
-            send_contact_email_message(feedback.subject, feedback.email, feedback.content, feedback.ip_address, feedback.user_id)
+            send_contact_email_message_task.delay(feedback.subject, feedback.email, feedback.content, feedback.ip_address, feedback.user_id)
         return super().form_valid(form)
     
 
@@ -308,7 +298,8 @@ class ProfileFollowingCreateView(View):
 
 
 
-# Custom templates for error pages 403, 404, 500
+# <-- Custom templates for error pages 403, 404, 500 -->
+
 
 def tr_handler404(request, exception):
     """
