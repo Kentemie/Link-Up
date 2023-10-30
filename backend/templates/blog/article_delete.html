@@ -1,0 +1,21 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <div class="card mb-3 border-0 nth-shadow">
+        <div class="card-body">
+            <div class="card-title nth-card-title">
+                <h4>Deleting an article</h4>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-info-circle"></i> You are about to delete an article: <strong>{{ article.title }}</strong>, do you confirm your action?
+                </div>
+                <div class="d-grid gap-2 d-md-block mt-2">
+                    <button type="submit" class="btn btn-dark">Delete article</button>
+                    <a href="{{ article.get_absolute_url }}" class="btn btn-primary">Cancel deletion</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

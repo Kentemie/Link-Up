@@ -1,0 +1,14 @@
+<div class="card">
+	<div class="card-body">
+		<h5 class="card-title">Latest comments</h5>
+		<div class="card-text">
+			<ul>
+				{% for comment in comments %}
+				<li>{{ comment.author }} - {{ comment.content|striptags|slice:":30" }}</li>
+				{% empty %}
+				<li>No comments yet</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+</div>

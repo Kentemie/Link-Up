@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  
+  pgdb:
+    container_name: postgres_database
+    image: postgres
+    ports: 
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=PapaKarlo1
+      - POSTGRES_PASSWORD=tem_123123123
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"

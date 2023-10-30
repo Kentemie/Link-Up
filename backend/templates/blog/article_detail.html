@@ -1,0 +1,64 @@
+{% extends 'main.html' %}
+{% load mptt_tags static %}
+
+{% block content %}
+    <div class="card mb-3 border-0 shadow-sm">
+        <div class="row">
+            <div class="col-4">
+                <img src="{{ article.thumbnail.url }}" class="card-img-top" alt="{{ article.title }}" />
+            </div>
+            <div class="col-8">
+                <div class="card-body">
+                    <h5>{{ article.title }}</h5>
+                    <p class="card-text">{{ article.full_description|safe }}</p>
+                    Category: <a href="{% url 'blog:articles_by_category' article.category.slug %}">{{ article.category.title }}</a> / Added: {{ article.author.username }} / <small>{{ article.created_at }}</small>
+                    <div class="mt-3 rating-buttons">
+                        <button class="btn btn-sm btn-primary" data-article="{{ article.id }}" data-value="1">Like</button>
+                        <button class="btn btn-sm btn-secondary" data-article="{{ article.id }}" data-value="-1">Dislike</button>
+                        <button class="btn btn-sm btn-secondary rating-sum">{{ article.get_sum_rating }}</button>
+                    </div> 
+                </div>
+            </div>
+        </div>
+        {% if article.tags.all %}
+            <div class="card-footer border-0">
+                Post tags: {% for tag in article.tags.all %} <a href="{% url 'blog:articles_by_tags' tag.slug %}">{{ tag }}</a>, {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="card border-0">
+        <div class="card-body">
+            <h5 class="card-title">
+                Comments:
+            </h5>
+            {% include 'blog/comments/comments_list.html' %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'custom/js/ratings.js' %}"></script>
+{% endblock%}
+
+{% block sidebar %}
+    <div class="card mb-2 border-0">
+        <div class="card-body">
+            <div class="card-title">
+                Similar articles:
+            </div>
+            <div class="card-text">
+                <ul class="similar-articles">
+                    {% for similar_article in similar_articles %}
+                        <li>
+                            <a href="{{ similar_article.get_absolute_url }}">
+                                {{ similar_article.title }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        There are no similar articles
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

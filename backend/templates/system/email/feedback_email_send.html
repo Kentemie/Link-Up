@@ -1,0 +1,17 @@
+{% autoescape off %}
+
+Hello Administrator,
+
+A new message has been received from the contact form with the following content:
+
+    {{ content }}
+
+    Sender IP Address: {{ ip }}
+    Sender's email: {{ email }}
+    {% if user %}
+    User: {{ user.username }}
+    {% endif %}
+
+Django Base Project website team
+
+{% endautoescape %}
