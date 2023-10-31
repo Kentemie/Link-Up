@@ -1,16 +1,24 @@
+import environ
+
 from pathlib import Path
 from celery.schedules import crontab
 
+
+# Working with env.dev
+env = environ.Env()
+environ.Env.read_env(env_file=Path('./docker/env/.env.dev'))
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = 'django-insecure-dc%jh67bnr@2r+f=)b7wbk(o$53epb(7w9_1b)6os+xsb=+q%d'
+SECRET_KEY = env('SECRET_KEY')
 
-DEBUG = True
+DEBUG = int(env('DEBUG', default=1))
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = env('ALLOWED_HOSTS').split()
+
+CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS').split()
 
 
 
@@ -81,11 +89,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'PapaKarlo1',
-        'PASSWORD': 'tem_123123123',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': env('POSTGRES_DB'),
+        'USER': env('POSTGRES_USER'),
+        'PASSWORD': env('POSTGRES_PASSWORD'),
+        'HOST': env('POSTGRES_HOST'),
+        'PORT': env('POSTGRES_PORT'),
     }
 }
 
@@ -111,7 +119,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://localhost:6379',
+        'LOCATION': env('REDIS_LOCATION'),
     }
 }
 
@@ -160,16 +168,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_PORT = '465'
-EMAIL_USE_SSL = True
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_USE_SSL = int(env('EMAIL_USE_SSL', default=1))
 
-EMAIL_HOST_USER = 'Kentemie@yandex.ru'
-EMAIL_HOST_PASSWORD = 'zohqrnijdunwhpho'
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
-EMAIL_ADMIN = EMAIL_HOST_USER
+EMAIL_ADMIN = [EMAIL_HOST_USER]
 
 
 
@@ -273,8 +281,8 @@ AUTHENTICATION_BACKENDS = [
 
 # Celery settings
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_ACCEPT_CONTENT = ['application/json']

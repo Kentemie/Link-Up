@@ -48,7 +48,6 @@ class CountViewerMixin:
                 user=request.user if request.user.is_authenticated else None,
                 ip_address=get_client_ip(request)
             )
-            print(self.object.viewers.all())
 
             if self.object.viewers.filter(id=viewer.id).count() == 0:
                 self.object.viewers.add(viewer)
