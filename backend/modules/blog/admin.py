@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from mptt.admin import DraggableMPTTAdmin
 
-from .models import Category, Article, Comment, Rating
+from .models import Category, Article, Comment, Rating, Viewer
 
 
 @admin.register(Category)
@@ -38,3 +38,9 @@ class CommentAdmin(DraggableMPTTAdmin):
 class RatingAdmin(admin.ModelAdmin):
     list_display = ["id", "article", "user", "value", "created_at", "ip_address"]
     list_filter = ["created_at"]
+
+
+@admin.register(Viewer)
+class ViewCountAdmin(admin.ModelAdmin):
+    list_display = ["id", "user", "ip_address", "viewed_on",]
+    list_filter = ["viewed_on"]

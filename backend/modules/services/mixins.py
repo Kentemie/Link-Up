@@ -3,6 +3,10 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.shortcuts import redirect
 
+from ..blog.models import Viewer
+
+from .utils import get_client_ip
+
 
 
 class AuthorRequiredMixin(AccessMixin):
@@ -29,3 +33,24 @@ class UserIsNotAuthenticated(UserPassesTestMixin):
     
     def handle_no_permission(self):
         return redirect('blog:home')
+    
+
+
+class CountViewerMixin:
+    """
+    Mixin to increase article view count
+    """
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if hasattr(self.object, 'viewers'):
+            viewer, _ = Viewer.objects.get_or_create(
+                user=request.user if request.user.is_authenticated else None,
+                ip_address=get_client_ip(request)
+            )
+            print(self.object.viewers.all())
+
+            if self.object.viewers.filter(id=viewer.id).count() == 0:
+                self.object.viewers.add(viewer)
+ 
+        return response

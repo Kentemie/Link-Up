@@ -14,7 +14,7 @@
                     <p class="card-text">{{ article.short_description|safe }}</p>
                     </hr>
                     Category: <a href="{% url 'blog:articles_by_category' article.category.slug %}">{{ article.category.title }}</a> 
-                    / Added: {{ article.author.username }}
+                    / Added: {{ article.author.username }} / Views: {{ article.viewers.count }}
                     <div class="mt-3 rating-buttons">
                         <button class="btn btn-sm btn-primary" data-article="{{ article.id }}" data-value="1">Like</button>
                         <button class="btn btn-sm btn-secondary" data-article="{{ article.id }}" data-value="-1">Dislike</button>

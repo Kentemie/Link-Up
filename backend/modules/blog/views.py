@@ -16,7 +16,7 @@ from typing import Any
 from .models import Article, Category, Comment, Rating
 from .forms import ArticleCreateForm, ArticleUpdateForm, CommentCreateForm
 
-from ..services.mixins import AuthorRequiredMixin
+from ..services.mixins import AuthorRequiredMixin, CountViewerMixin
 from ..services.utils  import get_client_ip
 
 from taggit.models import Tag
@@ -37,7 +37,7 @@ class ArticleListView(ListView):
     
 
 
-class ArticleDetailView(DetailView):
+class ArticleDetailView(CountViewerMixin, DetailView):
 
     model = Article
     template_name = 'blog/article_detail.html'

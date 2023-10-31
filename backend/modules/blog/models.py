@@ -18,7 +18,10 @@ User = get_user_model()
 class ArticleManager(models.Manager):
 
     def all(self):
-        return self.get_queryset().select_related('author', 'category').prefetch_related('ratings').filter(status='P')
+        return self.get_queryset()\
+                .select_related('author', 'category')\
+                .prefetch_related('ratings', 'viewers')\
+                .filter(status='P')
     
     def detail(self):
         return self.get_queryset()\
@@ -68,6 +71,39 @@ class Category(MPTTModel):
     
     def get_absolute_url(self):
         return reverse('blog:articles_by_category', kwargs={'slug': self.slug})
+    
+
+
+class Viewer(models.Model):
+    """
+    Article views model
+    """
+
+    class Meta:
+        ordering = ('-viewed_on',)
+        indexes = [models.Index(fields=['-viewed_on'])]
+        verbose_name = 'Viewer'
+        verbose_name_plural = 'Viewers'
+
+
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        related_name='user_viewer',
+        blank=True,
+        null=True
+    )
+    ip_address = models.GenericIPAddressField(
+        verbose_name='IP address',
+    )
+    viewed_on = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name='Date viewed'
+    )
+
+
+    def __str__(self):
+        return f'{self.user}-{self.ip_address}'
 
 
 
@@ -116,6 +152,12 @@ class Article(models.Model):
         on_delete=models.PROTECT, 
         related_name='articles', 
         verbose_name='Category'
+    )
+    viewers = models.ManyToManyField(
+        Viewer,
+        verbose_name='Views',
+        related_name='article_viewers',
+        blank=True
     )
     short_description = CKEditor5Field(
         verbose_name='Short description', 
