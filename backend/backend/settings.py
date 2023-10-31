@@ -1,4 +1,7 @@
 from pathlib import Path
+from celery.schedules import crontab
+
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -278,3 +281,10 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/Moscow'
+
+CELERY_BEAT_SCHEDULE = {
+    'backup_database': {
+        'task': 'modules.services.tasks.dbackup_task', # Path to the task specified in tasks.py
+        'schedule': crontab(hour=0, minute=0),  # The backup will be created every day at midnight
+    },
+}
